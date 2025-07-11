@@ -40,38 +40,41 @@ exports.getTasks = async (req, res) => {
 };
 
 // Update task (Users can update their tasks, Admin can update any task)
-exports.updateTask = async (req, res) => {
-    const { taskId } = req.params;
-    const { title, description, status, assignedTo } = req.body;
-  
+ exports.updateTask = async (req, res) => {
+    const { taskId } = req.params;   // taskId from the route parameter
+    const { title, description } = req.body;  // Destructure from the request body
+
     try {
-      let task = await Task.findById(taskId);
-  
-      if (!task) {
-        return res.status(404).json({ msg: 'Task not found' });
-      }
-  
-      if (task.createdBy.toString() !== req.user.id && req.user.role !== 'admin') {
-        return res.status(403).json({ msg: 'You do not have permission to update this task' });
-      }
-  
-      // Update task fields
-      task.title = title || task.title;
-      task.description = description || task.description;
-      task.status = status || task.status;
-      task.assignedTo = req.user.role === 'admin' ? assignedTo || task.assignedTo : task.assignedTo;
-  
-      await task.save();
-  
-      // Emit real-time event when task is updated
-      io.emit('taskUpdated', task);  // Emit to all connected clients
-  
-      res.json(task);
+        // Ensure title and description are passed in the request
+        if (!title || !description) {
+            return res.status(400).json({ msg: 'Title and description are required' });
+        }
+
+        // Find the task by ID
+        let task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ msg: 'Task not found' });
+        }
+
+        // Ensure the task belongs to the user or is allowed to be edited by admin
+        if (task.createdBy.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ msg: 'You do not have permission to update this task' });
+        }
+
+        // Update task fields
+        task.title = title || task.title;
+        task.description = description || task.description;
+
+        await task.save();
+
+        res.json(task);
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
-  };
+};
+
 
 // Delete task (Users can delete their tasks, Admin can delete any task)
 exports.deleteTask = async (req, res) => {
@@ -89,7 +92,7 @@ exports.deleteTask = async (req, res) => {
       return res.status(403).json({ msg: 'You do not have permission to delete this task' });
     }
 
-    await task.remove();
+    await task.deleteOne();
     res.json({ msg: 'Task deleted successfully' });
   } catch (err) {
     console.error(err.message);
@@ -125,3 +128,22 @@ exports.assignTask = async (req, res) => {
       res.status(500).send('Server Error');
     }
   };
+
+  exports.getTasksForUser = async (req, res) => {
+    try {
+      const { userId } = req.params;  // Get the userId from the URL params
+  
+      // Check if the current user is an admin or the user trying to view their own tasks
+      if (req.user.role !== 'admin' && req.user.id !== userId) {
+        return res.status(403).json({ msg: 'You do not have permission to view these tasks' });
+      }
+  
+      // Fetch tasks that are assigned to the user or created by the user
+      const tasks = await Task.find({ assignedTo: userId });
+  
+      res.json(tasks);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }

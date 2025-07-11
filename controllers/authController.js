@@ -47,6 +47,7 @@ exports.registerUser = async (req, res) => {
           email: user.email,
           role: user.role, 
         },
+        message:'User Registered'
       });  // Return the token in the response
     } catch (err) {
       console.error(err.message);
@@ -91,6 +92,7 @@ exports.loginUser = async (req, res) => {
           email: user.email,
           role: user.role, 
         },
+        message:'User Logged In!'
     });
   } catch (err) {
     console.error(err.message);

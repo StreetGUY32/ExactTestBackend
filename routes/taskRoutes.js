@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
-const { createTask, getTasks, updateTask, deleteTask, assignTask } = require('../controllers/taskController');
+const { createTask, getTasks, updateTask, deleteTask, assignTask,getTasksForUser } = require('../controllers/taskController');
 
 // Create a new task (User creates for themselves, Admin creates for anyone)
 router.post('/create', authMiddleware, createTask);
@@ -18,5 +18,7 @@ router.delete('/delete/:taskId', authMiddleware, deleteTask);
 
 // Admin assigns task to a user
 router.put('/assign', [authMiddleware, roleMiddleware(['admin'])], assignTask);
+
+router.get('/getTasksForUser/:userId', authMiddleware,getTasksForUser);
 
 module.exports = router;
