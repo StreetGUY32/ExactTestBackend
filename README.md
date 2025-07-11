@@ -18,13 +18,13 @@ A simple **Task Management** system built with **Node.js**, **Express**, **Mongo
 
 ### 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/task-management-system.git 
+git clone https://github.com/StreetGUY32/ExactTestBackend.git 
 ```
 
 ### 2. Install dependencies:
 Navigate to the project directory and run:
 ```bash
-cd task-management-system
+cd ExactTestBackend
 npm install
 ```
 ### 3. Set up environment variables:
