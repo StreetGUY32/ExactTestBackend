@@ -30,7 +30,7 @@ exports.getTasks = async (req, res) => {
   try {
     const tasks = req.user.role === 'admin'
       ? await Task.find()  // Admin sees all tasks
-      : await Task.find({ createdBy: req.user.id });  // Users see only their tasks
+      : await Task.find({ assignedTo: req.user.id });  // Users see only their tasks
 
     res.json(tasks);
   } catch (err) {
